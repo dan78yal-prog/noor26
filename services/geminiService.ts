@@ -1,8 +1,26 @@
 import { GoogleGenAI } from "@google/genai";
 
 // Initialize the API client
-// Note: In a real app, ensure process.env.API_KEY is correctly configured
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+// Safely handle API Key access to prevent runtime crashes in browser environments
+const getApiKey = () => {
+  try {
+    // Check if process.env exists (Node/Webpack)
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+    // Check for Vite environment variable
+    // @ts-ignore
+    if (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_KEY) {
+      // @ts-ignore
+      return import.meta.env.VITE_API_KEY;
+    }
+  } catch (e) {
+    console.warn("Could not access environment variables");
+  }
+  return '';
+};
+
+const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
 const MODEL_NAME = 'gemini-3-flash-preview';
 
